@@ -1,0 +1,36 @@
+.chat-main {
+  width: 100%;
+  height: 80vh;
+  display: flex;
+  justify-content: center;
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.chat-icon {
+  margin-right: 15px;
+  cursor: pointer;
+}
+
+.chat-nick {
+  width: 98%;
+  display: flex;
+  justify-content: space-between;
+}
+
+h2 {
+  cursor: pointer;
+}
+
+#chat-content {
+  padding: 1rem 2rem;
+}
+
+#chat-title {
+  font-weight: 900;
+}

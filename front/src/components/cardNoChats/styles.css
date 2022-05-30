@@ -1,0 +1,24 @@
+.noChats {
+  width: 100%;
+}
+
+#cardNoChats {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px 15px;
+  margin: 40px 0;
+  width: 60vh;
+}
+
+.footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: opacity 0.7s;
+}
+
+.footer:hover {
+  opacity: 0.5;
+}

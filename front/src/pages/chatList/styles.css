@@ -1,0 +1,23 @@
+h2 {
+  font-size: 1.2rem;
+}
+
+#cardList {
+  min-width: 60%;
+}
+
+.card-title {
+  font-size: 2rem;
+}
+
+.content {
+  margin: 100px 0;
+}
+
+#chats-card {
+  display: flex;
+  justify-content: center;
+  height: 70px;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
