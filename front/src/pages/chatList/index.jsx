@@ -16,6 +16,13 @@ export const ChatList = ({
 }) => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
+  const localStorageList = [];
+  for (var i = 0; i < localStorage.length; i++) {
+    localStorageList.push(localStorage.key(i));
+  }
+  const haveTheKey = localStorageList.filter(function (item) {
+    return item === "sala";
+  });
 
   const closeModal = () => {
     setShowModal(false);
@@ -25,6 +32,17 @@ export const ChatList = ({
     entrarSala(chat.id, user);
     navigate(`/chatList/chat/${chat.id}`);
   }
+
+  useEffect(() => {
+    if (haveTheKey.length > 0) {
+      localStorage.setItem("sala", "");
+    }
+    const localSala = localStorage.getItem("sala");
+    console.log(
+      "🚀 ~ file: index.jsx ~ line 41 ~ useEffect ~ localSala",
+      localSala
+    );
+  }, []);
   return (
     <>
       <Card id="cardList">

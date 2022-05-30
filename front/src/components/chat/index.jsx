@@ -28,10 +28,6 @@ export const Chat = () => {
     }
   }, [chat]);
 
-  useEffect(() => {
-    console.log("🚀 ~ file: index.jsx ~ line 38 ~ Chat ~ usersOn", usersOn);
-  }, [usersOn]);
-
   return (
     <div className="chat-main">
       <Card style={{ width: "60%" }}>

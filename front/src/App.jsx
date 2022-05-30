@@ -22,6 +22,14 @@ const App = () => {
   const [nameChat, setNameChat] = useState("");
   const [chats, setChats] = useState([]);
   const [messages, updateMessages] = useState([{}]);
+  const localStorageList = [];
+  for (var i = 0; i < localStorage.length; i++) {
+    localStorageList.push(localStorage.key(i));
+  }
+  const haveTheKey = localStorageList.filter(function (item) {
+    return item === "sala";
+  });
+
   const conectar = (nick) => {
     setNick("");
     socket.emit("newUser", {
@@ -38,7 +46,16 @@ const App = () => {
   };
 
   const entrarSala = (salaId, user) => {
-    localStorage.setItem("sala", salaId);
+    if (haveTheKey.length > 0) {
+      const localSala = localStorage.getItem("sala");
+      if (localSala === "") {
+        localStorage.setItem("sala", salaId);
+      }
+    }
+
+    if (!(haveTheKey.length > 0)) {
+      localStorage.setItem("sala", salaId);
+    }
     socket.emit("entrarSala", {
       salaId: salaId,
       user: user,
@@ -53,10 +70,6 @@ const App = () => {
       setChats(data);
     });
 
-    socket.on("getChat", (data) => {
-      setChat(data);
-    });
-
     socket.on("newUser", (data) => {
       if (user === "") {
         localStorage.setItem("user", JSON.stringify(data));
@@ -66,12 +79,21 @@ const App = () => {
 
     socket.on("entrarSala", (data) => {
       const localUser = JSON.parse(localStorage.getItem("user"));
-      if (localUser.id === data.id) setUser(data);
+      if (localUser.id === data.id) {
+        const localSala = localStorage.getItem("sala");
+        console.log(
+          "🚀 ~ file: App.jsx ~ line 83 ~ socket.on ~ localSala",
+          localSala
+        );
+        setUser(data);
+      }
     });
 
     socket.on("usersSala", (data) => {
       const localSala = localStorage.getItem("sala");
-      if (localSala == data[0].id) setChat(data);
+      if (localSala == data[0].id) {
+        setChat(data);
+      }
     });
   }, [socket]);
 
