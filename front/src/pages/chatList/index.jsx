@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
-import { Card, Button } from "react-bootstrap/";
+import { Card, Alert } from "react-bootstrap/";
 import { CardNoChats } from "../../components/cardNoChats";
 import { ModalNewChat } from "../../components/modalNewChat";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import "./styles.css";
-import { getOverlayDirection } from "react-bootstrap/esm/helpers";
 
 export const ChatList = ({
   nameChat,
@@ -13,6 +12,7 @@ export const ChatList = ({
   chats,
   user,
   entrarSala,
+  sairSala,
 }) => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
@@ -36,12 +36,8 @@ export const ChatList = ({
   useEffect(() => {
     if (haveTheKey.length > 0) {
       localStorage.setItem("sala", "");
+      sairSala(user);
     }
-    const localSala = localStorage.getItem("sala");
-    console.log(
-      "🚀 ~ file: index.jsx ~ line 41 ~ useEffect ~ localSala",
-      localSala
-    );
   }, []);
   return (
     <>

@@ -8,6 +8,7 @@ import { ChatList } from "./pages/chatList";
 import { Chat } from "./components/chat";
 import { useId } from "./context/IdContext";
 import { useChat } from "./context/chatContext";
+import { Modal, Button } from "react-bootstrap/";
 
 const socket = io("http://localhost:8080", {
   transports: ["websocket"],
@@ -22,6 +23,8 @@ const App = () => {
   const [nameChat, setNameChat] = useState("");
   const [chats, setChats] = useState([]);
   const [messages, updateMessages] = useState([{}]);
+  const [usersOn, setUsersOn] = useState([]);
+  const [showError, setShowError] = useState(false);
   const localStorageList = [];
   for (var i = 0; i < localStorage.length; i++) {
     localStorageList.push(localStorage.key(i));
@@ -31,17 +34,15 @@ const App = () => {
   });
 
   const conectar = (nick) => {
-    setNick("");
     socket.emit("newUser", {
       name: nick,
     });
-    navigate("/chatList");
   };
 
-  const newSala = (sala) => {
-    setNameChat("");
+  const newSala = (sala, user) => {
     socket.emit("newSala", {
       sala: sala,
+      user: user.id,
     });
   };
 
@@ -52,7 +53,6 @@ const App = () => {
         localStorage.setItem("sala", salaId);
       }
     }
-
     if (!(haveTheKey.length > 0)) {
       localStorage.setItem("sala", salaId);
     }
@@ -62,9 +62,20 @@ const App = () => {
     });
   };
 
+  const sairSala = (user) => {
+    socket.emit("exitSala", {
+      user: user,
+    });
+  };
+
   useEffect(() => {
     socket.on("newSala", (data) => {
-      setChats(data);
+      const localuser = JSON.parse(localStorage.getItem("user"));
+      if (data === localuser.id) {
+        setShowError(true);
+      } else {
+        setChats(data);
+      }
     });
     socket.on("getSalas", (data) => {
       setChats(data);
@@ -74,17 +85,13 @@ const App = () => {
       if (user === "") {
         localStorage.setItem("user", JSON.stringify(data));
         setUser(data);
+        navigate("/chatList");
       }
     });
 
     socket.on("entrarSala", (data) => {
       const localUser = JSON.parse(localStorage.getItem("user"));
       if (localUser.id === data.id) {
-        const localSala = localStorage.getItem("sala");
-        console.log(
-          "🚀 ~ file: App.jsx ~ line 83 ~ socket.on ~ localSala",
-          localSala
-        );
         setUser(data);
       }
     });
@@ -93,6 +100,13 @@ const App = () => {
       const localSala = localStorage.getItem("sala");
       if (localSala == data[0].id) {
         setChat(data);
+      }
+    });
+
+    socket.on("exitSala", (data) => {
+      const localSala = localStorage.getItem("sala");
+      if (localSala == data[0].id) {
+        if (data[0].usuarios) setUsersOn(data[0].usuarios);
       }
     });
   }, [socket]);
@@ -106,30 +120,53 @@ const App = () => {
   }, [id]);
 
   return (
-    <Routes>
-      <Route
-        path="/"
-        element={<HomePage nick={nick} setNick={setNick} conectar={conectar} />}
-      />
-      <Route
-        path="/chatList"
-        element={
-          <ChatList
-            nameChat={nameChat}
-            setNameChat={setNameChat}
-            newSala={newSala}
-            chats={chats}
-            setChats={setChats}
-            entrarSala={entrarSala}
-            user={user}
-          />
-        }
-      />
-      <Route
-        path="/chatList/chat/:chatId"
-        element={<Chat messages={messages} updateMessages={updateMessages} />}
-      />
-    </Routes>
+    <>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <HomePage nick={nick} setNick={setNick} conectar={conectar} />
+          }
+        />
+        <Route
+          path="/chatList"
+          element={
+            <ChatList
+              nameChat={nameChat}
+              setNameChat={setNameChat}
+              newSala={newSala}
+              chats={chats}
+              setChats={setChats}
+              entrarSala={entrarSala}
+              user={user}
+              sairSala={sairSala}
+            />
+          }
+        />
+        <Route
+          path="/chatList/chat/:chatId"
+          element={
+            <Chat
+              messages={messages}
+              updateMessages={updateMessages}
+              setUsersOn={setUsersOn}
+              usersOn={usersOn}
+            />
+          }
+        />
+      </Routes>
+      <Modal show={showError} onHide={() => setShowError(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Erro!</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>Já existe um usuario ou sala com esse nome</Modal.Body>
+        <Modal.Footer>
+          <Button variant="primary" onClick={() => setShowError(false)}>
+            Ok
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </>
   );
 };
 

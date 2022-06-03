@@ -14,7 +14,9 @@ export const ModalNewChat = ({
   };
 
   const novaSala = () => {
-    newSala(nameChat);
+    const localuser = JSON.parse(localStorage.getItem("user"));
+    setNameChat("");
+    newSala(nameChat, localuser);
     handleClose();
   };
 

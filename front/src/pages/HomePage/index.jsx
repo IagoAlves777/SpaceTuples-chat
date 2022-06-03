@@ -5,7 +5,6 @@ export const HomePage = ({ nick, setNick, conectar }) => {
   const handleChange = (e) => {
     setNick(e.target.value);
   };
-
   return (
     <Card style={{ width: "30rem", height: "17rem" }}>
       <Card.Body id="card-home">
