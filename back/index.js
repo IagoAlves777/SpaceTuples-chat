@@ -9,6 +9,7 @@ const io = socket(server);
 const SERVER_HOST = "localhost";
 const SERVER_PORT = 8080;
 let spaceTuples = [];
+let TuplesMenssagers = [];
 
 function readAllChats(spaceTuples) {
   function filtrar(value) {
@@ -25,13 +26,38 @@ function readChatById(spaceTuples, id) {
       return value;
     }
   }
-  retorno = spaceTuples.filter(filtrar);
+  const retorno = spaceTuples.filter(filtrar);
   return retorno;
+}
+
+function writeMenssagem(spaceTuples, menssagem) {
+  spaceTuples.push(menssagem);
+  return spaceTuples;
+}
+
+function writeExitSala(spaceTuples, user) {
+  function removeItem(arr, prop, value) {
+    return arr.filter(function (i) {
+      return i[prop] !== value;
+    });
+  }
+  const _spaceTuples = [...spaceTuples];
+  _spaceTuples.map((t) => {
+    if (t.type === "player" && t.id === user.id) {
+      t.sala = "";
+    }
+    if (t.type === "sala" && t.id === user.sala) {
+      const newUsers = removeItem(t.usuarios, "id", user.id);
+      t.usuarios.splice(0, t.usuarios.lentgh);
+      t.usuarios = newUsers;
+    }
+  });
+  return _spaceTuples;
 }
 
 function writeUserSala(spaceTuples, usersSala) {
   const _spaceTuples = [...spaceTuples];
-  _spaceTuples.map((t, index) => {
+  _spaceTuples.map((t) => {
     if (t.id === usersSala[0].sala && t.type === "sala") {
       t.usuarios.splice(0, t.usuarios.lentgh);
       t.usuarios = usersSala;
@@ -75,14 +101,41 @@ io.on("connection", (socket) => {
   });
 
   socket.on("newSala", (data) => {
-    const newSala = {
-      type: "sala",
-      id: Math.floor(Math.random() * 100),
-      name: data.sala,
-      usuarios: [],
-    };
-    spaceTuples.push(newSala);
-    io.emit("newSala", readAllChats(spaceTuples));
+    const NotExists = spaceTuples.every((s) => s.name !== data.sala);
+    if (!NotExists) {
+      io.emit("newSala", {
+        tupleSpace: readAllChats(spaceTuples),
+        user: data.user,
+      });
+      return;
+    }
+    if (data.user === "private") {
+      const newSala = {
+        type: "sala",
+        id: Math.floor(Math.random() * 100),
+        name: data.sala,
+        usuarios: [],
+        private: true,
+      };
+      spaceTuples.push(newSala);
+      io.emit("newSala", {
+        tupleSpace: readAllChats(spaceTuples),
+        user: "private",
+      });
+    } else {
+      const newSala = {
+        type: "sala",
+        id: Math.floor(Math.random() * 100),
+        name: data.sala,
+        usuarios: [],
+        private: false,
+      };
+      spaceTuples.push(newSala);
+      io.emit("newSala", {
+        tupleSpace: readAllChats(spaceTuples),
+        user: "",
+      });
+    }
   });
 
   socket.on("getSalas", () => {
@@ -100,6 +153,20 @@ io.on("connection", (socket) => {
     spaceTuples = writeUserSala(spaceTuples, usersSala);
     io.emit("entrarSala", newUser);
     io.emit("usersSala", readChatById(spaceTuples, data.salaId));
+  });
+
+  socket.on("exitSala", (data) => {
+    spaceTuples = writeExitSala(spaceTuples, data.user);
+    io.emit("exitSala", readChatById(spaceTuples, data.user.sala));
+  });
+
+  socket.on("newMenssagem", (menssagem) => {
+    if (menssagem === "") {
+      io.emit("newMenssagem", TuplesMenssagers);
+      return;
+    }
+    TuplesMenssagers = writeMenssagem(TuplesMenssagers, menssagem);
+    io.emit("newMenssagem", TuplesMenssagers);
   });
 });
 

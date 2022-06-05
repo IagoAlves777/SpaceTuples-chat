@@ -25,6 +25,9 @@ const App = () => {
   const [messages, updateMessages] = useState([{}]);
   const [usersOn, setUsersOn] = useState([]);
   const [showError, setShowError] = useState(false);
+  const [menssagens, setMenssagens] = useState([]);
+  const [privateChats, setPrivateChats] = useState([]);
+
   const localStorageList = [];
   for (var i = 0; i < localStorage.length; i++) {
     localStorageList.push(localStorage.key(i));
@@ -44,6 +47,14 @@ const App = () => {
       sala: sala,
       user: user.id,
     });
+  };
+
+  const enviarMenssagem = (menssagem) => {
+    socket.emit("newMenssagem", menssagem);
+  };
+
+  const atualizarMensagens = () => {
+    socket.emit("newMenssagem", "");
   };
 
   const entrarSala = (salaId, user) => {
@@ -71,10 +82,10 @@ const App = () => {
   useEffect(() => {
     socket.on("newSala", (data) => {
       const localuser = JSON.parse(localStorage.getItem("user"));
-      if (data === localuser.id) {
+      if (data.user === localuser.id) {
         setShowError(true);
       } else {
-        setChats(data);
+        setChats(data.tupleSpace);
       }
     });
     socket.on("getSalas", (data) => {
@@ -92,6 +103,7 @@ const App = () => {
     socket.on("entrarSala", (data) => {
       const localUser = JSON.parse(localStorage.getItem("user"));
       if (localUser.id === data.id) {
+        localStorage.setItem("user", JSON.stringify(data));
         setUser(data);
       }
     });
@@ -109,7 +121,53 @@ const App = () => {
         if (data[0].usuarios) setUsersOn(data[0].usuarios);
       }
     });
+
+    socket.on("newMenssagem", (menssagens) => {
+      const newMenssagens = getMenssagens(menssagens);
+      setMenssagens(newMenssagens);
+    });
   }, [socket]);
+
+  const getMenssagens = (menssagens) => {
+    const localSala = localStorage.getItem("sala");
+    const localUser = JSON.parse(localStorage.getItem("user"));
+    const newMenssagens = [];
+    menssagens.map((m) => {
+      if (m.type === "global") {
+        newMenssagens.push(m);
+      } else if (m.type === "private") {
+        const userPrivate = m.sala.split("-");
+        if (localUser.name == userPrivate[0]) {
+          let newM = {
+            ...m,
+            type: "mine-private",
+          };
+          newMenssagens.push(newM);
+        } else if (user.name === userPrivate[1]) {
+          console.log("Entrou no privado 1 !!");
+          let newM = {
+            ...m,
+            type: "other-private",
+          };
+          newMenssagens.push(newM);
+        }
+      } else if (m.sala == localSala && m.user.id == localUser.id) {
+        let newM = {
+          ...m,
+          type: "mine",
+        };
+        newMenssagens.push(newM);
+      } else if (m.sala == localSala && m.user.id != localUser.id) {
+        let newM = {
+          ...m,
+          type: "other",
+        };
+        newMenssagens.push(newM);
+      }
+    });
+
+    return newMenssagens;
+  };
 
   useEffect(() => {
     socket.emit("getSalas", {});
@@ -151,6 +209,15 @@ const App = () => {
               updateMessages={updateMessages}
               setUsersOn={setUsersOn}
               usersOn={usersOn}
+              menssagens={menssagens}
+              setMenssagens={setMenssagens}
+              enviarMenssagem={enviarMenssagem}
+              getMenssagens={getMenssagens}
+              privateChats={privateChats}
+              setPrivateChats={setPrivateChats}
+              newSala={newSala}
+              atualizarMensagens={atualizarMensagens}
+              chats={chats}
             />
           }
         />

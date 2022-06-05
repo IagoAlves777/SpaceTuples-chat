@@ -16,6 +16,7 @@ export const ChatList = ({
 }) => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
+  const localUser = JSON.parse(localStorage.getItem("user"));
   const localStorageList = [];
   for (var i = 0; i < localStorage.length; i++) {
     localStorageList.push(localStorage.key(i));
@@ -36,6 +37,8 @@ export const ChatList = ({
   useEffect(() => {
     if (haveTheKey.length > 0) {
       localStorage.setItem("sala", "");
+      const newUser = { ...localUser, sala: null };
+      localStorage.setItem("user", JSON.stringify(newUser));
       sairSala(user);
     }
   }, []);
@@ -46,20 +49,23 @@ export const ChatList = ({
           <Card.Title>Salas disponiveis</Card.Title>
           <div className="content">
             {chats.length ? (
-              chats.map((chat, index) => (
-                <Card
-                  onClick={() => goTo(chat)}
-                  id="chats-card"
-                  bg={"dark"}
-                  key={"Dark"}
-                  text={"light"}
-                  style={{ width: "24rem" }}
-                >
-                  <Card.Body>
-                    <Card.Title>{chat.name}</Card.Title>
-                  </Card.Body>
-                </Card>
-              ))
+              chats.map(
+                (chat, index) =>
+                  !chat.private && (
+                    <Card
+                      onClick={() => goTo(chat)}
+                      id="chats-card"
+                      bg={"dark"}
+                      key={"Dark"}
+                      text={"light"}
+                      style={{ width: "24rem" }}
+                    >
+                      <Card.Body>
+                        <Card.Title>{chat.name}</Card.Title>
+                      </Card.Body>
+                    </Card>
+                  )
+              )
             ) : (
               <CardNoChats />
             )}
