@@ -143,8 +143,7 @@ const App = () => {
             type: "mine-private",
           };
           newMenssagens.push(newM);
-        } else if (user.name === userPrivate[1]) {
-          console.log("Entrou no privado 1 !!");
+        } else if (localUser.name == userPrivate[1]) {
           let newM = {
             ...m,
             type: "other-private",

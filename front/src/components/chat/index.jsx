@@ -45,7 +45,6 @@ export const Chat = ({
   }, [chat]);
 
   function goTo() {
-    setPrivateChats([]);
     navigate(`/chatList`);
   }
 
@@ -53,19 +52,19 @@ export const Chat = ({
     const newChatPrivate = [];
     chats.map((chat) => {
       const userPrivate = chat.name.split("-");
-
       if (userPrivate[0] !== user.name && userPrivate[1] === user.name) {
         newChatPrivate.push(userPrivate[0]);
       } else if (userPrivate[1] !== user.name && userPrivate[0] === user.name) {
         newChatPrivate.push(userPrivate[1]);
       }
     });
-    setPrivateChats(...privateChats, newChatPrivate);
-  }, [chats]);
+    const NotExists = privateChats.every((c) => c !== newChatPrivate);
 
-  useEffect(() => {
-    console.log("🚀 ~ file: index.jsx ~ line 69 ~ privateChats", privateChats);
-  }, [privateChats]);
+    if (newChatPrivate.length > 0 && NotExists) {
+      const newPrivetsChats = [...privateChats, newChatPrivate];
+      setPrivateChats(newPrivetsChats);
+    }
+  }, [chats]);
 
   const submitMenssagem = (event) => {
     event.preventDefault();
@@ -184,7 +183,7 @@ export const Chat = ({
               </div>
             </Tab>
             {privateChats.map((privateChat) => (
-              <Tab eventKey={privateChat.name} title={privateChat.name}>
+              <Tab eventKey={privateChat} title={privateChat}>
                 <div className="div_messenger">
                   <main className="main_chat">
                     <div className="chat_scroll">
